@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#17120c">
+<title>Realm Game</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root{
+  color-scheme:dark;
+  --ink:#e9dcc1;--muted:#b7a98f;--panel:#211b14e8;--panel2:#15110de8;
+  --line:#75664e;--gold:#d0ab5e;--green:#65a96a;--red:#b8574e;--blue:#5686ad;--purple:#745f91;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:#0d0b08;color:var(--ink);font-family:Georgia,'Times New Roman',serif}
+body:before{content:"";position:fixed;inset:0;z-index:-2;background:
+ radial-gradient(circle at 22% 15%,#66553a55 0 5%,transparent 24%),
+ radial-gradient(circle at 82% 78%,#51442f55 0 7%,transparent 25%),
+ linear-gradient(115deg,#292116,#110e0a 48%,#241d13)}
+body:after{content:"";position:fixed;inset:0;z-index:-1;opacity:.2;pointer-events:none;background-image:repeating-linear-gradient(0deg,#ffffff08 0 1px,transparent 1px 4px)}
+button{font:inherit;color:inherit;cursor:pointer}
+.app{width:min(1180px,100%);margin:auto;padding:8px;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.shell{border:1px solid #8a7758;background:#0f0c09;box-shadow:0 0 0 2px #332818,0 10px 35px #0008;overflow:hidden}
+.topmap{height:190px;position:relative;overflow:hidden;border-bottom:2px solid #5e4c31;background:
+ radial-gradient(ellipse at 50% 105%,#27251b 0 14%,transparent 15%),
+ linear-gradient(145deg,transparent 0 30%,#554a34 31% 32%,transparent 33% 44%,#66583d 45% 47%,transparent 48%),
+ repeating-radial-gradient(ellipse at 22% 56%,transparent 0 12px,#63573c55 13px 14px,transparent 15px 24px),
+ linear-gradient(#8b805f,#655b42)}
+.topmap:after{content:"";position:absolute;inset:0;background:linear-gradient(#1c160828,transparent 28%,#1c16082e),repeating-linear-gradient(12deg,transparent 0 14px,#29211516 15px 16px)}
+.brand{position:absolute;z-index:2;left:12px;top:10px;text-shadow:0 2px 2px #000}.brand b{font-size:21px;letter-spacing:2px}.brand small{display:block;color:#e5d7b4}
+.map-points{position:absolute;inset:0;z-index:3}.map-point{position:absolute;transform:translate(-50%,-50%);border:0;background:transparent;color:#2a2418;text-shadow:0 1px #b9ad89;font-weight:700;font-size:11px;padding:10px}.map-point:before{content:"◆";display:block;font-size:14px}.map-point.here{color:#501d19;text-shadow:0 1px #e4cf9a}.map-point.here:before{content:"✦";font-size:20px}.map-point.locked{opacity:.32}.map-point:disabled{cursor:default}
+.hudstrip{position:absolute;left:0;right:0;bottom:0;z-index:4;height:26px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;background:#120f0bcf;border-top:1px solid #7f6b48;font:12px system-ui,sans-serif;color:#ddd}
+.gamegrid{display:grid;grid-template-columns:minmax(0,1fr) 180px;min-height:520px}
+.encounter{min-width:0;background:#1a2119;position:relative;overflow:hidden}
+.scene{height:365px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:1px solid #62523b;background:
+ radial-gradient(circle at 50% 30%,#a9d0d6 0 8%,#78aeb9 22%,transparent 23%),
+ linear-gradient(160deg,transparent 0 23%,#26392f 24% 47%,transparent 48%),
+ linear-gradient(200deg,transparent 0 23%,#314637 24% 49%,transparent 50%),
+ linear-gradient(#4d817f 0 32%,#405347 33% 52%,#293628 53% 100%)}
+.scene:before,.scene:after{content:"";position:absolute;bottom:-35px;width:68%;height:330px;background:repeating-linear-gradient(168deg,#354a38 0 13px,#26382d 14px 24px);filter:drop-shadow(0 0 7px #111)}
+.scene:before{left:-32%;transform:rotate(18deg);clip-path:polygon(0 100%,17% 58%,30% 70%,42% 35%,55% 53%,68% 13%,80% 37%,100% 0,100% 100%)}
+.scene:after{right:-32%;transform:scaleX(-1) rotate(18deg);clip-path:polygon(0 100%,17% 58%,30% 70%,42% 35%,55% 53%,68% 13%,80% 37%,100% 0,100% 100%)}
+.zone-title{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:3;background:#1d1710d9;border:1px solid #8b7653;padding:5px 12px;letter-spacing:1px;white-space:nowrap;box-shadow:0 2px 5px #0009}
+.enemy-card{position:relative;z-index:4;width:min(330px,74%);text-align:center;margin-top:68px}
+.enemy-art{width:150px;height:150px;margin:0 auto -8px;filter:drop-shadow(0 12px 8px #0009);display:grid;place-items:center;font-size:90px;transform-origin:50% 90%;animation:breathe 2.7s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.035) translateY(-3px)}}
+.enemy-name{background:linear-gradient(#554737,#2b241c);border:1px solid #a6936e;padding:5px 8px;font-weight:700;text-shadow:0 1px #000;box-shadow:0 2px 5px #0008}.enemy-meta{font:12px system-ui,sans-serif;color:#ddd;margin:4px}
+.meter{height:12px;background:#201914;border:1px solid #827154;box-shadow:inset 0 0 4px #000;overflow:hidden}.meter>i{display:block;height:100%;transition:width .25s}.meter.hp>i{background:linear-gradient(#7ad179,#356e38)}.meter.rest>i{background:linear-gradient(#e6c169,#936b23)}.meter.xp>i{background:linear-gradient(#7f9cca,#425e86)}
+.statusline{position:absolute;z-index:3;left:12px;right:12px;bottom:8px;text-align:center;font-size:13px;text-shadow:0 2px 2px #000}
+.actionbar{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;padding:6px;background:#17120e;border-bottom:1px solid #5f5039}.slot,.invslot{aspect-ratio:1;background:linear-gradient(135deg,#433c31,#181713);border:1px solid #766951;box-shadow:inset 0 0 0 1px #0b0907,0 1px 2px #000;position:relative;display:grid;place-items:center;min-width:0}.slot button{position:absolute;inset:0;border:0;background:transparent;padding:0}.slot .glyph{font-size:24px;filter:drop-shadow(0 1px #000)}.slot small{position:absolute;bottom:2px;left:3px;font:9px system-ui,sans-serif;color:#ddd}.slot.primary{outline:1px solid #a07052}.slot.disabled{opacity:.38}
+.bottompanels{display:grid;grid-template-columns:1fr 1fr;min-height:135px}.chat,.combatlog{padding:7px;background:#15110d;font:12px system-ui,sans-serif;overflow:auto;max-height:145px}.chat{border-right:1px solid #62523b}.chat b{color:#6dc2d2}.combatlog .rare{color:#f1c65a}.combatlog .bad{color:#e57d72}.combatlog .good{color:#8bd38d}
+.sidebar{border-left:2px solid #67573d;background:#17130f;padding:6px;display:flex;flex-direction:column;gap:6px}.portrait{height:118px;border:1px solid #75664d;background:radial-gradient(circle at 50% 35%,#4a655a 0 7%,transparent 8%),linear-gradient(155deg,#1a2522,#382d20);display:grid;place-items:end center;font-size:58px;padding-bottom:7px}.side-title{text-align:center;letter-spacing:2px;color:#c8b68c;font-size:13px;border-bottom:1px solid #75664d;padding-bottom:3px}.stats{font:12px system-ui,sans-serif}.statrow{display:grid;grid-template-columns:31px 1fr 38px;align-items:center;gap:4px;margin:3px 0}.statrow span:last-child{text-align:right}.money{text-align:center;border:1px solid #75664d;background:#231d16;padding:6px;font-weight:700}.sidebuttons{display:grid;grid-template-columns:1fr 1fr;gap:4px}.sidebuttons button,.tabbuttons button,.bigactions button,.craft-card button,.upgrade-card button{border:1px solid #75664d;background:linear-gradient(#4b4030,#282118);padding:8px 5px;box-shadow:inset 0 1px #8c7b5e;font-weight:700}.sidebuttons button:active,.tabbuttons button:active,.bigactions button:active{transform:translateY(1px)}button:disabled{opacity:.35;cursor:not-allowed}
+.tabbuttons{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.tabbuttons button.active{outline:1px solid #d0ae68;background:linear-gradient(#68543a,#352819)}
+.overlaypanel{display:none;position:absolute;z-index:12;inset:8px;background:#15110df5;border:1px solid #8b7653;box-shadow:0 6px 24px #000;padding:10px;overflow:auto}.overlaypanel.show{display:block}.panelhead{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #75664d;margin-bottom:8px;padding-bottom:5px}.close{border:1px solid #75664d;background:#30271d;padding:4px 8px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:7px}.craft-card,.upgrade-card{border:1px solid #5e513e;background:#241e17;padding:9px}.craft-card b,.upgrade-card b{display:block;margin-bottom:5px}.small{font:12px system-ui,sans-serif;color:#bdb09a}
+.mobiledeck{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;padding:8px;background:#211a12;border-top:2px solid #6a5738}.mobiledeck .slot{min-height:68px}.mobiledeck .slot .glyph{font-size:29px}
+.inventory-wrap{margin-top:8px}.inventory-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.invslot{min-height:55px}.invslot .icon{font-size:23px}.invslot .qty{position:absolute;top:2px;right:3px;font:bold 11px system-ui,sans-serif}.invslot .name{position:absolute;left:2px;right:2px;bottom:2px;font:8px system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}.empty{opacity:.34}
+.bigactions{display:grid;grid-template-columns:2fr 1fr;gap:6px;margin-top:7px}.bigactions button{padding:11px}.fightbtn{background:linear-gradient(#6d4032,#351b17)!important}.restbtn{background:linear-gradient(#3f5748,#223229)!important}
+.notice{position:fixed;left:50%;top:16%;z-index:99;transform:translate(-50%,-16px);opacity:0;background:#1e1710f2;border:1px solid #d0ab5e;padding:9px 14px;box-shadow:0 5px 18px #000;pointer-events:none;transition:.25s}.notice.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:720px){.app{padding:0}.shell{border-left:0;border-right:0}.topmap{height:165px}.gamegrid{grid-template-columns:1fr}.sidebar{display:none}.scene{height:355px}.bottompanels{grid-template-columns:1fr}.chat{display:none}.combatlog{border:0;max-height:120px}.actionbar{grid-template-columns:repeat(8,minmax(48px,1fr));overflow-x:auto}.mobiledeck{grid-template-columns:repeat(6,minmax(52px,1fr));overflow-x:auto}.enemy-art{width:135px;height:135px;font-size:78px}.zone-title{top:8px}.inventory-grid{grid-template-columns:repeat(5,1fr)}}
+@media(min-width:721px){.mobiledeck{display:none}}
+</style>
+</head>
+<body>
+<div class="app"><div class="shell">
+  <header class="topmap">
+    <div class="brand"><b>REALM</b><small>an old-world browser RPG</small></div>
+    <div id="map" class="map-points"></div>
+    <div class="hudstrip"><span>Adventurers Online: <b id="online">73</b></span><span id="clock">00:00:00</span></div>
+  </header>
+  <main class="gamegrid">
+    <section class="encounter">
+      <div class="scene">
+        <div id="zoneName" class="zone-title"></div>
+        <div class="enemy-card">
+          <div id="enemyArt" class="enemy-art">🐀</div>
+          <div id="enemyName" class="enemy-name"></div>
+          <div class="meter hp"><i id="enemyHpBar" style="width:100%"></i></div>
+          <div id="enemyMeta" class="enemy-meta"></div>
+        </div>
+        <div id="statusline" class="statusline">Choose a zone, then begin your hunt.</div>
+      </div>
+
+      <div id="actionbar" class="actionbar"></div>
+      <div class="bottompanels">
+        <div class="chat"><b>Realm:</b> Welcome, traveler.<br><span style="color:#b9a6db">Tip:</span> Rare creatures may carry soulbound time cards.<br><span style="color:#87c9b6">World:</span> The road ahead grows more dangerous.</div>
+        <div id="log" class="combatlog"></div>
+      </div>
+
+      <div id="craftPanel" class="overlaypanel"><div class="panelhead"><b>CRAFTING</b><button class="close" onclick="showPanel(null)">Close</button></div><div id="recipes" class="cards"></div></div>
+      <div id="upgradePanel" class="overlaypanel"><div class="panelhead"><b>PERMANENT UPGRADES</b><button class="close" onclick="showPanel(null)">Close</button></div><div id="upgrades" class="cards"></div></div>
+      <div id="inventoryPanel" class="overlaypanel"><div class="panelhead"><b>INVENTORY & TROPHIES</b><button class="close" onclick="showPanel(null)">Close</button></div><div id="inventoryFull" class="inventory-grid"></div></div>
+    </section>
+
+    <aside class="sidebar">
+      <div class="portrait">🧙</div>
+      <div class="side-title">ADVENTURER</div>
+      <div class="stats">
+        <div class="statrow"><span>HP</span><div class="meter hp"><i id="hpBar"></i></div><span id="hpText"></span></div>
+        <div class="statrow"><span>RT</span><div class="meter rest"><i id="restBar"></i></div><span id="restText"></span></div>
+        <div class="statrow"><span>XP</span><div class="meter xp"><i id="xpBar"></i></div><span id="xpText"></span></div>
+      </div>
+      <div class="money">GOLD <span id="gold"></span></div>
+      <div class="side-title">LEVEL <span id="level"></span></div>
+      <div class="tabbuttons"><button onclick="showPanel('inventory')">BAG</button><button onclick="showPanel('craft')">CRAFT</button><button onclick="showPanel('upgrade')">UPGRADE</button></div>
+      <div class="side-title">EQUIPMENT</div>
+      <div id="equipment" class="inventory-grid"></div>
+      <div class="bigactions"><button id="fight" class="fightbtn" onclick="fight()">FIGHT</button><button class="restbtn" onclick="rest()">REST</button></div>
+    </aside>
+  </main>
+  <div id="mobiledeck" class="mobiledeck"></div>
+</div></div>
+<div id="notice" class="notice"></div>
+<script>
+const zones=[
+ {name:'Greenhaven',lv:1,x:15,y:72,scene:'Verdant trail',enemy:'Bramble Rat',glyph:'🐀'},
+ {name:'Old Road',lv:2,x:29,y:54,scene:'Broken kingroad',enemy:'Road Goblin',glyph:'👺'},
+ {name:'Moss Cave',lv:3,x:39,y:80,scene:'Moss-veiled cavern',enemy:'Cave Slime',glyph:'🟢'},
+ {name:'Wolfwood',lv:4,x:49,y:45,scene:'Blackpine forest',enemy:'Greyfang Wolf',glyph:'🐺'},
+ {name:'Sunken Ruins',lv:5,x:60,y:70,scene:'Flooded ruins',enemy:'Drowned Bandit',glyph:'🗡️'},
+ {name:'Ash Fields',lv:6,x:71,y:39,scene:'Cinder wastes',enemy:'Ash Wraith',glyph:'👻'},
+ {name:'Frost Pass',lv:7,x:79,y:67,scene:'Frozen mountain pass',enemy:'Ice Golem',glyph:'🧊'},
+ {name:'Obsidian Gate',lv:8,x:88,y:32,scene:'Volcanic threshold',enemy:'Gate Demon',glyph:'😈'},
+ {name:'Dragon Reach',lv:10,x:93,y:76,scene:'Ancient highlands',enemy:'Ember Drake',glyph:'🐉'}
+];
+const itemIcons={Wood:'🪵',Ore:'⛏️',Trophy:'🏆','Soulbound Time Card':'⌛','Iron Blade':'⚔️','Hunter Charm':'🔮','Realm Trophy':'🏅'};
+const defaultSave={level:1,xp:0,hp:100,maxHp:100,gold:25,zone:0,rested:100,maxRested:100,inv:{Wood:2,Ore:1},virtue:0,accel:0,doubleAccel:0,last:Date.now(),wins:0};
+let s=Object.assign({},defaultSave,JSON.parse(localStorage.realmSave||'null')||{});s.inv=s.inv||{Wood:2,Ore:1};
+let elapsed=Math.floor((Date.now()-(s.last||Date.now()))/60000);s.rested=Math.min(s.maxRested||100,(s.rested||0)+elapsed);s.last=Date.now();
+let currentEnemyHp=100;
+function save(){s.last=Date.now();localStorage.realmSave=JSON.stringify(s)}
+function esc(t){return String(t).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function log(t,cls=''){let e=document.getElementById('log');e.innerHTML=`<div class="${cls}">${esc(t)}</div>`+e.innerHTML}
+function flash(t){notice.textContent=t;notice.classList.add('show');clearTimeout(flash.t);flash.t=setTimeout(()=>notice.classList.remove('show'),1600)}
+function add(i,n=1){s.inv[i]=(s.inv[i]||0)+n}
+function need(obj){return Object.entries(obj).every(([k,v])=>(s.inv[k]||0)>=v)}
+function spend(obj){for(let k in obj)s.inv[k]-=obj[k]}
+function selectZone(i){if(i>s.level)return;s.zone=i;currentEnemyHp=100;save();render();flash('Entered '+zones[i].name)}
+function showPanel(n){for(const id of ['craftPanel','upgradePanel','inventoryPanel'])document.getElementById(id).classList.remove('show');if(n)document.getElementById(n+'Panel').classList.add('show');render()}
+function slot(glyph,label,onClick='',disabled=false,primary=false){return `<div class="slot ${disabled?'disabled':''} ${primary?'primary':''}"><span class="glyph">${glyph}</span><small>${label}</small>${onClick?`<button ${disabled?'disabled':''} onclick="${onClick}" aria-label="${label}"></button>`:''}</div>`}
+function renderActions(){
+ const disabled=s.rested<=0||s.hp<=0;
+ actionbar.innerHTML=[
+  slot('⚔️','Attack','fight()',disabled,true),slot('🛡️','Guard','guard()',false),slot('✨','Skill','skill()',disabled),slot('🧪','Recover','rest()',false),
+  slot('🎒','Bag',"showPanel('inventory')"),slot('🔨','Craft',"showPanel('craft')"),slot('✦','Upgrade',"showPanel('upgrade')"),slot('🗺️','Map','window.scrollTo({top:0,behavior:\'smooth\'})')
+ ].join('');
+ mobiledeck.innerHTML=[slot('⚔️','Fight','fight()',disabled,true),slot('🛡️','Guard','guard()'),slot('✨','Skill','skill()',disabled),slot('🧪','Rest','rest()'),slot('🎒','Bag',"showPanel('inventory')"),slot('🔨','Craft',"showPanel('craft')")].join('');
+}
+function renderInventory(target){
+ const items=Object.entries(s.inv).filter(([,v])=>v>0);
+ const html=items.map(([k,v])=>`<div class="invslot"><span class="icon">${itemIcons[k]||'◆'}</span><span class="qty">${v}</span><span class="name">${esc(k)}</span></div>`);
+ while(html.length<18)html.push('<div class="invslot empty"></div>');target.innerHTML=html.join('');
+}
+function render(){
+ const z=zones[s.zone];
+ gold.textContent=s.gold.toLocaleString();level.textContent=s.level;
+ hpText.textContent=`${s.hp}/${s.maxHp}`;hpBar.style.width=(100*s.hp/s.maxHp)+'%';
+ restText.textContent=`${Math.floor(s.rested)}`;restBar.style.width=(100*s.rested/s.maxRested)+'%';
+ const needXp=s.level*40;xpText.textContent=`${s.xp}/${needXp}`;xpBar.style.width=Math.min(100,100*s.xp/needXp)+'%';
+ zoneName.textContent=z.name+' — '+z.scene;enemyName.textContent=z.enemy;enemyArt.textContent=z.glyph;enemyMeta.textContent=`Level ${z.lv} · ${25+z.lv*18} vitality`;enemyHpBar.style.width=currentEnemyHp+'%';
+ statusline.textContent=s.rested>0?`Rested time ${Math.floor(s.rested)}/${s.maxRested} · Hunt trophies, crafting materials, and rare time cards.`:'You are out of rested time. It recovers while you are away.';
+ fight.disabled=s.rested<=0||s.hp<=0;
+ map.innerHTML=zones.map((q,i)=>`<button class="map-point ${i===s.zone?'here':''} ${i>s.level?'locked':''}" style="left:${q.x}%;top:${q.y}%" ${i>s.level?'disabled':''} onclick="selectZone(${i})">${q.name}</button>`).join('');
+ renderActions();renderInventory(inventoryFull);
+ equipment.innerHTML=[slot('⚔️','Weapon'),slot('🏹','Ranged'),slot('🛡️','Armor'),slot('🔮','Charm'),slot('💍','Ring'),slot('◈','Empty')].join('');
+ renderRecipes();renderUpgrades();save();
+}
+function fight(mult=1){
+ if(s.rested<1)return flash('No rested time remaining');
+ const z=zones[s.zone].lv,haste=1+s.accel*.15+s.doubleAccel*.25,dmg=Math.floor((12+s.level*3+s.virtue*2)*haste*mult),enemyHp=25+z*18,taken=Math.max(1,Math.floor(z*5-Math.random()*5));
+ const hits=Math.max(1,Math.ceil(enemyHp/dmg));currentEnemyHp=Math.max(0,100-(dmg/enemyHp*100));enemyHpBar.style.width=currentEnemyHp+'%';
+ s.hp-=taken*hits;s.rested=Math.max(0,s.rested-hits);
+ if(s.hp<=0){s.hp=1;s.gold=Math.max(0,s.gold-10);log('You were defeated and lost 10 gold.','bad');flash('Defeated');currentEnemyHp=100;render();return}
+ const g=4+z*3;s.gold+=g;s.xp+=8+z*4;s.wins=(s.wins||0)+1;add(Math.random()<.5?'Wood':'Ore');
+ if(Math.random()<.15){add('Trophy');log('A monster trophy dropped!','good')}
+ if(Math.random()<.025){add('Soulbound Time Card');s.rested=Math.min(s.maxRested,s.rested+50);log('RARE DROP: Soulbound Time Card! +50 rested time.','rare');flash('RARE: Soulbound Time Card!')}
+ log(`Defeated ${zones[s.zone].enemy} in ${hits} hit(s). +${g} gold.`,'good');
+ while(s.xp>=s.level*40){s.xp-=s.level*40;s.level++;s.maxHp+=10;s.hp=s.maxHp;log('Level up! You are now level '+s.level+'.','rare');flash('LEVEL '+s.level+'!')}
+ currentEnemyHp=100;render();
+}
+function guard(){s.hp=Math.min(s.maxHp,s.hp+Math.max(2,Math.floor(s.maxHp*.05)));log('You steady your guard and recover a little HP.');render()}
+function skill(){if(s.rested<1)return;log('You unleash a focused strike.','good');fight(1.35)}
+function rest(){s.hp=s.maxHp;log('You rest and recover your HP.');flash('HP restored');render()}
+const rec=[['Iron Blade',{Wood:2,Ore:4}],['Hunter Charm',{Wood:4,Trophy:2}],['Realm Trophy',{Ore:5,Trophy:5}]];
+function renderRecipes(){recipes.innerHTML=rec.map(([n,c])=>`<div class="craft-card"><b>${itemIcons[n]||'◆'} ${n}</b><div class="small">${Object.entries(c).map(([k,v])=>`${k} ×${v}`).join(' · ')}</div><button ${need(c)?'':'disabled'} onclick='craft(${JSON.stringify(n)})'>Craft</button></div>`).join('')}
+function craft(n){let r=rec.find(x=>x[0]===n);if(r&&need(r[1])){spend(r[1]);add(n);log('Crafted '+n+'.','good');flash('Crafted '+n);render()}}
+function renderUpgrades(){let ups=[['Virtue','virtue',100,'+2 base damage'],['Acceleration','accel',200,'+15% combat speed'],['Double Accel','doubleAccel',500,'+25% combat speed']];upgrades.innerHTML=ups.map(([n,k,c,d])=>`<div class="upgrade-card"><b>${s[k]?'✓ ':'✦ '}${n}</b><div class="small">${d}<br>${c} gold</div><button ${s[k]||s.gold<c?'disabled':''} onclick="buy('${k}',${c})">${s[k]?'Unlocked':'Unlock'}</button></div>`).join('')}
+function buy(k,c){if(!s[k]&&s.gold>=c){s.gold-=c;s[k]=1;log('Upgrade unlocked: '+k+'.','rare');flash('Upgrade unlocked');render()}}
+function tickClock(){const d=new Date(),pad=n=>String(n).padStart(2,'0');clock.textContent=`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`}
+setInterval(tickClock,1000);tickClock();render();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
